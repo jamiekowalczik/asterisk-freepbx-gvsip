@@ -1,0 +1,49 @@
+{% for gvsipacct in gvsip %}
+;; Trunk custom dial string: PJSIP/$OUTNUM$@gvsip{{ gvsipacct.number }}
+[gvsip{{ gvsipacct.number }}]
+type=registration
+outbound_auth=gvsip{{ gvsipacct.number }}
+server_uri=sip:obihai.sip.google.com
+outbound_proxy=sip:obihai.telephony.goog:5061\;transport=tls\;lr\;hide
+client_uri=sip:GV{{ gvsipacct.number }}@obihai.sip.google.com
+retry_interval=60
+support_path=yes
+support_outbound=yes
+line=yes
+endpoint=gvsip{{ gvsipacct.number }}
+contact_user={{ gvsipacct.number }}
+transport=transport_tls
+transport_reuse=no
+
+[gvsip{{ gvsipacct.number }}]
+type=auth
+auth_type=oauth
+refresh_token={{ gvsipacct.refresh_token }}
+oauth_clientid={{ gvsipacct.oauth_clientid }}
+oauth_secret={{ gvsipacct.oauth_secret }}
+username=GV{{ gvsipacct.number }}
+realm=obihai.sip.google.com
+
+[gvsip{{ gvsipacct.number }}]
+type=aor
+contact=sip:obihai.sip.google.com
+
+[gvsip{{ gvsipacct.number }}]
+type=endpoint
+context=from-pstn
+disallow=all
+allow=ulaw
+allow=opus
+outbound_auth=gvsip{{ gvsipacct.number }}
+outbound_proxy=sip:obihai.telephony.goog:5061\;transport=tls\;lr\;hide
+aors=gvsip{{ gvsipacct.number }}
+direct_media=no
+ice_support=yes
+rtcp_mux=yes
+media_use_received_transport=yes
+outbound_registration=gvsip{{ gvsipacct.number }}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+{% endfor %}
