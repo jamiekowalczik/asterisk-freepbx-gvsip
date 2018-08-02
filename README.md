@@ -1,24 +1,27 @@
-# asterisk-freepbx
+# asterisk-freepbx-gvsip
 Want a fully capable PBX for pretty much free??
 
-Setup Asterisk & FreePBX in a Virtual Machine running on some spare old hardware.  I provision 40G of storage and 512MB of memory.
+Setup Asterisk & FreePBX in a VirtualBox Virtual Machine.
 
-Prerequisites: VirtualBox Vagrant git
+Prerequisites: VirtualBox Vagrant git google voice
 
-1.) # mkdir asterisk-freepbx; cd asterisk-freepbx
+1.) # git clone https://github.com/jamiekowalczik/asterisk-freepbx-gvsip.git
 
-2.) # git clone https://github.com/jamiekowalczik/asterisk-freepbx.git
+2.) update Vagrantfile with the appropriate bridge name (replace wlo1) and IP address.
 
-3.) update Vagrantfile with the appropriate bridge name (replace wlo1) and IP address.
+3.) # cd asterisk-freepbx-gvsip; vagrant up
 
-4.) # vagrant up
+4.) When the machine is fully setup browse to http://<IP Address> and setup a username, password, email address to send alerts to then setup the time zone.
 
-5.) When the machine is fully setup browse to http://<IP Address> and setup a username, password, email address to send alerts to.
+5.) TODO: explain how to obtain the google voice values needed for setting up the trunks.  Setup the trunks, inbound, and outbound routes.
 
-6.) From Admin-->Modules, Update from the internet and choose Extended and Unsupported then install Google Motif
+7.) Start setting up phones...
 
-7.) From Connectivity-->Google Voice(Motif) fill in your Google Voice credentials and number and choose to create trunks/etc.
+8.) More to come.
 
-8.) Start setting up phones...
+------------------------------------
+Additionally if you have a base Centos 7 install that you'd like to use as your PBX rather than using Vagrant to provision a virtual machine, use the following:
 
-9.) More to come.
+```
+bash <(curl -s https://raw.githubusercontent.com/jamiekowalczik/asterisk-freepbx-gvsip/master/provision/install.bash)
+```

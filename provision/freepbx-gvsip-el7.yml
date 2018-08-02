@@ -4,7 +4,7 @@
   become_user: root
     
   vars:
-    ## Is using a version other than 1.1 you will need to change symlinking tasks
+    ## If using a version other than 1.1 you will need to change symlinking tasks
     ## Future upgrades of openssl using yum will break this
     openssl_archive: "https://www.openssl.org/source/openssl-1.1.0h.tar.gz"
     ## Hacked a task to update build_tools/make_version to use an appropriate version so freepbx works
