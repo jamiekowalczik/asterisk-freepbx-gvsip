@@ -9,7 +9,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
      vb.memory = "1024"
-     vb.name = "asterisk-1"
+     vb.name = "asterisk-freepbx-gvsip"
   end
   
   config.vm.synced_folder "./provision", "/home/vagrant/provision", type: "rsync"

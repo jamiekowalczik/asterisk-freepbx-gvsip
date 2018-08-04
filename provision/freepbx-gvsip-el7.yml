@@ -17,7 +17,12 @@
     gvsip:
       - { number: '1112223333', oauth_clientid: 'asdf.apps.googleusercontent.com', oauth_secret: 'XXXXXX', refresh_token: 'asdfasdf' }
       - { number: '1112223334', oauth_clientid: 'asdg.apps.googleusercontent.com', oauth_secret: 'XXXXXY', refresh_token: 'asdfasdg' }
-
+    asteriskInstalled: "no"
+    opensslInstalled: "no"
+    forceOpenSSL: "no"
+    forceAsterisk: "no"
+    forceFreePBX: "no"
+    updatepjsip: "yes"
       
   tasks:
      - name: Install firewalld
@@ -86,7 +91,6 @@
           - lame-devel 
           - gstreamer* 
           - texinfo 
-          - sox
           - openssl
           - openssl-devel
       
@@ -115,11 +119,23 @@
      - name: Start and Enable httpd
        service: name=httpd state=started enabled=yes
  
+     - name: Get Asterisk Version
+       shell: asterisk -rx 'core show version' | awk '{print $2}'
+       register: command_output
+       changed_when: false
+
+     - name: Determine if Asterisk Install/Upgrade is needed
+       set_fact:
+         asteriskInstalled="yes"
+       when: command_output.stdout == "13.21.1"
+       changed_when: false
+
      - name: Download and extract Asterisk packages
        unarchive:
          src: "{{ asterisk_archive }}"
          dest: /usr/src
          remote_src: yes
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
 
      - name: Find Asterisk path
        find:
@@ -128,6 +144,7 @@
          patterns: "^naf419-asterisk"
          use_regex: yes
        register: asterisk_path
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
        
      ## Required for naf419 branch to work with FreePBX
      - name: Update make version
@@ -136,18 +153,31 @@
          regexp: 'UNKNOWN__and_probably_unsupported'
          replace: '13.21.1'
          backup: no
-       
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
+
      - name: Install Asterisk prereqs using their provided script
        command: "contrib/scripts/install_prereq install"
        args:
          chdir: "{{ asterisk_path.files.0.path }}"
        changed_when: false
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
+
+     - name: Get OpenSSL Version
+       shell: openssl version | awk '{print $2}'
+       register: command_output
+       changed_when: false
+
+     - name: Determine if OpenSSL Install/Upgrade is needed
+       set_fact:
+         opensslInstalled="yes"
+       when: command_output.stdout == "1.1.0h"
 
      - name: Download and extract OpenSSL 1.1 packages
        unarchive:
          src: "{{ openssl_archive }}"
          dest: /usr/src
          remote_src: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
 
      - name: Find OpenSSL path
        find:
@@ -156,6 +186,7 @@
          patterns: "^openssl"
          use_regex: yes
        register: openssl_path 
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
        
      - name: Run final commands to config, make, and install OpenSSL
        command: "{{ item }}"
@@ -165,6 +196,7 @@
          - ./config
          - make
          - make install
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
      
      - name: Create symlink for libsso.so    
        file:
@@ -172,6 +204,7 @@
          dest: "/usr/lib64/libssl.so"
          state: link
          force: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
          
      - name: Create symlink for libsso.so.1.1  
        file:
@@ -179,6 +212,7 @@
          dest: "/usr/lib64/libssl.so.1.1"
          state: link
          force: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
          
      - name: Create symlink for libcrypto.so 
        file:
@@ -186,6 +220,7 @@
          dest: "/usr/lib64/libcrypto.so"
          state: link
          force: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
          
      - name: Create symlink for libcrypto.so.1.1  
        file:
@@ -193,12 +228,15 @@
          dest: "/usr/lib64/libcrypto.so.1.1"
          state: link
          force: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
          
      - name: Copy original openssl exe
        copy: remote_src=True src=/usr/bin/openssl dest=/usr/bin/openssl_orig
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
        
      - name: Remove original openssl exe
        file: path=/usr/bin/openssl state=absent
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
       
      - name: Create symlink for openssl 1.1  
        file:
@@ -206,6 +244,7 @@
          dest: "/usr/bin/openssl"
          state: link
          force: yes
+       when: forceOpenSSL == "yes" or opensslInstalled == "no"
          
      - name: Configure asterisk
        command: "{{ item.command }}"
@@ -215,25 +254,28 @@
        environment:
          CFLAGS: '-DENABLE_SRTP_AES_256 -DENABLE_SRTP_AES_GCM'
        with_items:
-         - { command: './configure --libdir=/usr/lib64 --with-pjproject-bundled', creates: "{{ asterisk_path.files.0.path }}/config.log" }
+         - { command: './configure --libdir=/usr/lib64', creates: "{{ asterisk_path.files.0.path }}/config.log" }
          - { command: 'contrib/scripts/get_mp3_source.sh', creates: "{{ asterisk_path.files.0.path }}/addons/mp3" }
          - { command: 'make menuselect.makeopts', creates: "{{ asterisk_path.files.0.path }}/codecs/.makeopts" }
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
        
      - name: Build and install asterisk
        command: "{{ item }}"
        args:
          chdir: "{{ asterisk_path.files.0.path }}"
        with_items:
-         - menuselect/menuselect --enable format_mp3 --enable app_macro --enable app_statsd --enable codec_opus --enable CORE-SOUNDS-EN-WAV --enable CORE-SOUNDS-EN-ULAW --enable CORE-SOUNDS-EN-GSM --enable MOH-OPSOUND-WAV --enable MOH-OPSOUND-ULAW --enable MOH-OPSOUND-GSM
+         - menuselect/menuselect --enable format_mp3 --enable app_macro --enable app_statsd --enable codec_opus
          - make install
          - make config
          - make samples
          - ldconfig
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
          
      - name: Make sure the default asterisk service is disabled
        service:
          name: "asterisk"
          enabled: no
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
          
      - name: Update asterisk file 
        replace:
@@ -241,6 +283,7 @@
          regexp: '\[directories\]\(!\)'
          replace: '[directories]'
          backup: no  
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
          
      - name: Create symlink for tftpboot
        file:
@@ -248,13 +291,6 @@
          dest: "/tftpboot"
          state: link
          force: yes
-         
-     - name: Add cdr_adaptive_odbc
-       lineinfile:
-         path: "{{ item.path }}"
-         line: "{{ item.line }}"
-       with_items:
-         - { path: '/etc/asterisk/modules.conf', line: 'load = cdr_adaptive_odbc.so' }
          
      - name: Make sure everything is owned by asterisk user
        file:
@@ -272,12 +308,18 @@
          - /usr/lib64/asterisk
          - /var/lib/tftpboot
          - /var/lib/php/session
-         
+
+     - name: Check if FreePBX directory exists
+       stat:
+         path: /var/www/html/admin
+       register: freepbx_dir
+
      - name: Pull down Freepbx
        unarchive:
          src: "{{ freepbx_archive }}"
          dest: /usr/src
          remote_src: yes
+       when: freepbx_dir.exists and freepbx_dir.stat.isdir
 
      - name: Run install for Freepbx
        command: "{{ item.command }}"
@@ -377,7 +419,7 @@
          owner: asterisk
          group: asterisk
          mode: 644
-       when: gvsip is defined
+       when: gvsip is defined and updatepjsip == "yes"
        notify: restart asterisk
 
   handlers:
