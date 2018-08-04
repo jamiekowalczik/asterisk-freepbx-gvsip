@@ -312,13 +312,14 @@
        stat:
          path: /var/www/html/admin
        register: freepbx_dir
+       changed_when: false
 
      - name: Pull down Freepbx
        unarchive:
          src: "{{ freepbx_archive }}"
          dest: /usr/src
          remote_src: yes
-       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir
+       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir == false
 
      - name: Run install for Freepbx
        command: "{{ item.command }}"
