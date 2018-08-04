@@ -318,7 +318,7 @@
          src: "{{ freepbx_archive }}"
          dest: /usr/src
          remote_src: yes
-       when: freepbx_dir.exists and freepbx_dir.stat.isdir
+       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir
 
      - name: Run install for Freepbx
        command: "{{ item.command }}"
