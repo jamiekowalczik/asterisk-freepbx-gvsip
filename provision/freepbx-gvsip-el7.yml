@@ -21,7 +21,6 @@
     opensslInstalled: "no"
     forceOpenSSL: "no"
     forceAsterisk: "no"
-    forceFreePBX: "no"
     updatepjsip: "yes"
       
   tasks:
