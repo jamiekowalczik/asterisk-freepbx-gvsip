@@ -424,7 +424,7 @@
          dest: /etc/asterisk/pjsip_custom.conf
          owner: asterisk
          group: asterisk
-         mode: 644
+         mode: 0644
        when: gvsip is defined and updatepjsip == "yes"
        notify: restart asterisk
 
