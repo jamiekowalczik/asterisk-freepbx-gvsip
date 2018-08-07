@@ -1,16 +1,21 @@
-[global]
-type=global
-debug=true
-keep_alive_interval=90
+;[global]
+;type=global
+;debug=true
+;keep_alive_interval=90
 
 ; if using chan_sip to host sip clients instead of chan_pjsip,
 ; you wont have the (required) udp transport that supports those
 ; clients. if so, just make a dummy one on a port that won't
 ; conflict with chan_sip
-[incoming-registrations-unused-but-required]
+;[incoming-registrations-unused-but-required]
+;type=transport
+;protocol=udp
+;bind=0.0.0.0:9999
+
+[transport_tls]
 type=transport
-protocol=udp
-bind=0.0.0.0:9999
+protocol=tls
+bind=0.0.0.0:5069
 
 {% for gvsipacct in gvsip %}
 ;; Trunk custom dial string: PJSIP/$OUTNUM$@gvsip{{ gvsipacct.number }}
