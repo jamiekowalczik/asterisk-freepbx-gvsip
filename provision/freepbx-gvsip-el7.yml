@@ -269,8 +269,6 @@
          - menuselect/menuselect --enable format_mp3 --enable app_macro --enable app_statsd --enable codec_opus
          - make install
          - make config
-         - make samples
-         - ldconfig
        when: forceAsterisk == "yes" or asteriskInstalled == "no"
 
      - name: Make samples if initial Asterisk install
@@ -441,7 +439,7 @@
          owner: asterisk
          group: asterisk
          mode: 0644
-       when: gvsip is defined and updatepjsip == "yes"
+       when: gvsip is defined and updatepjsip == "yes" and asteriskInstalled == "no"
        notify: restart asterisk
 
   handlers:
