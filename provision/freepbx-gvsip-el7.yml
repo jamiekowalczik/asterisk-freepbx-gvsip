@@ -260,12 +260,22 @@
          #- { command: 'make menuselect.makeopts', creates: "{{ asterisk_path.files.0.path }}/codecs/.makeopts" }
          - { command: 'make menuselect.makeopts' }
        when: forceAsterisk == "yes" or asteriskInstalled == "no"
+
+     - name: Get mp3 sources
+       command: "{{ item.command }}"
+       args:
+         chdir: "{{ asterisk_path.files.0.path }}"
+         creates: "{{ item.creates }}"
+       with_items:
+         - { command: 'contrib/scripts/get_mp3_source.sh', creates: "{{ asterisk_path.files.0.path }}/addons/mp3" }
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
        
      - name: Build and install asterisk
        command: "{{ item }}"
        args:
          chdir: "{{ asterisk_path.files.0.path }}"
        with_items:
+         - make menuselect.makeopts
          - menuselect/menuselect --enable format_mp3 --enable app_macro --enable app_statsd --enable codec_opus
          - make install
          - make config
