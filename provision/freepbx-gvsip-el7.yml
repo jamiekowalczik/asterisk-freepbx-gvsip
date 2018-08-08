@@ -272,6 +272,22 @@
          - make samples
          - ldconfig
        when: forceAsterisk == "yes" or asteriskInstalled == "no"
+
+     - name: Make samples if initial Asterisk install
+       command: "{{ item }}"
+       args:
+         chdir: "{{ asterisk_path.files.0.path }}"
+       with_items:
+         - make samples
+       when: asteriskInstalled == "no"
+
+     - name: Finish install asterisk
+       command: "{{ item }}"
+       args:
+         chdir: "{{ asterisk_path.files.0.path }}"
+       with_items:
+         - ldconfig
+       when: forceAsterisk == "yes" or asteriskInstalled == "no"
          
      - name: Make sure the default asterisk service is disabled
        service:
