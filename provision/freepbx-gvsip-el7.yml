@@ -255,10 +255,6 @@
        with_items:
          #- { command: './configure --libdir=/usr/lib64 --with-pjproject-bundled --with-jansson-bundled', creates: "{{ asterisk_path.files.0.path }}/config.log" }
          - { command: './configure --libdir=/usr/lib64 --with-pjproject-bundled --with-jansson-bundled' }
-         #- { command: 'contrib/scripts/get_mp3_source.sh', creates: "{{ asterisk_path.files.0.path }}/addons/mp3" }
-         - { command: 'contrib/scripts/get_mp3_source.sh' }
-         #- { command: 'make menuselect.makeopts', creates: "{{ asterisk_path.files.0.path }}/codecs/.makeopts" }
-         - { command: 'make menuselect.makeopts' }
        when: forceAsterisk == "yes" or asteriskInstalled == "no"
 
      - name: Get mp3 sources
