@@ -8,7 +8,7 @@ pip install pip -U
 pip install setuptools -U
 pip install ansible
 git clone https://github.com/jamiekowalczik/asterisk-freepbx-gvsip.git
-cd asterisk-freepbx/provision
+cd asterisk-freepbx-gvsip/provision
 echo ""
 read -p "Update asterisk-freepbx/provision/freepbx-gvsip-el7.yml to include your GVSIP details then press enter to continue"
 ansible-playbook freepbx-gvsip-el7.yml -i inventory
