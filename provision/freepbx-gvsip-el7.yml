@@ -342,7 +342,7 @@
          src: "{{ freepbx_archive }}"
          dest: /usr/src
          remote_src: yes
-       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir == false
+       when: freepbx_dir.stat.exists == false
 
      - name: Run install for Freepbx
        command: "{{ item.command }}"
@@ -360,15 +360,12 @@
        
      - name: Copy original asterisk service script
        copy: remote_src=True src=/etc/init.d/asterisk dest=/etc/init.d/asterisk_orig
-       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir == false
        
      - name: Remove original asterisk service script
        file: path=/etc/init.d/asterisk state=absent
-       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir == false
        
      - name: Copy asterisk service script
        copy: remote_src=True src=/usr/src/freepbx/start_asterisk dest=/etc/init.d/asterisk mode=755
-       when: freepbx_dir.stat.exists and freepbx_dir.stat.isdir == false
        
      - name: Make sure everything is owned by asterisk user
        file:
