@@ -434,6 +434,14 @@
      - name: Open port for tls-sip
        firewalld: port=5061/tcp permanent=yes state=enabled
        notify: restart firewalld
+
+     - name: Open ports for rtp
+       firewalld: port=10000-20000/udp permanent=yes state=enabled
+       notify: restart firewalld
+
+     - name: Open port for tftp
+       firewalld: port=69/udp permanent=yes state=enabled
+       notify: restart firewalld
        
      - name: Create pjsip_custom.conf
        template:
